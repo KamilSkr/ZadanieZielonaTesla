@@ -1,0 +1,109 @@
+import java.util.*;
+
+public class TransactionProcessor {
+  
+  public static List<Account> processTransactions(List<Transaction> transactions) {
+    
+    // initialize map to keep track of account balances
+    Map<String, Account> accountMap = new HashMap<String, Account>();
+    
+    // loop through each transaction and update account balances
+    for (Transaction transaction : transactions) {
+      
+      // update debit account
+      String debitAccountNumber = transaction.getDebitAccount();
+      Account debitAccount = accountMap.getOrDefault(debitAccountNumber, new Account(debitAccountNumber));
+      debitAccount.debit(transaction.getAmount());
+      accountMap.put(debitAccountNumber, debitAccount);
+      
+      // update credit account
+      String creditAccountNumber = transaction.getCreditAccount();
+      Account creditAccount = accountMap.getOrDefault(creditAccountNumber, new Account(creditAccountNumber));
+      creditAccount.credit(transaction.getAmount());
+      accountMap.put(creditAccountNumber, creditAccount);
+    }
+    
+    // convert map to list and sort by account number
+    List<Account> accountList = new ArrayList<Account>(accountMap.values());
+    Collections.sort(accountList, new Comparator<Account>() {
+      public int compare(Account a1, Account a2) {
+        return a1.getAccountNumber().compareTo(a2.getAccountNumber());
+      }
+    });
+    
+    return accountList;
+  }
+  
+}
+
+class Transaction {
+  private String debitAccount;
+  private String creditAccount;
+  private double amount;
+  
+  public Transaction(String debitAccount, String creditAccount, double amount) {
+    this.debitAccount = debitAccount;
+    this.creditAccount = creditAccount;
+    this.amount = amount;
+  }
+  
+  public String getDebitAccount() {
+    return debitAccount;
+  }
+  
+  public String getCreditAccount() {
+    return creditAccount;
+  }
+  
+  public double getAmount() {
+    return amount;
+  }
+}
+
+class Account {
+  private String accountNumber;
+  private int debitCount;
+  private int creditCount;
+  private double balance;
+  
+  public Account(String accountNumber) {
+    this.accountNumber = accountNumber;
+    this.debitCount = 0;
+    this.creditCount = 0;
+    this.balance = 0.0;
+  }
+  
+  public String getAccountNumber() {
+    return accountNumber;
+  }
+  
+  public int getDebitCount() {
+    return debitCount;
+  }
+  
+  public int getCreditCount() {
+    return creditCount;
+  }
+  
+  public double getBalance() {
+    return balance;
+  }
+  
+  public void debit(double amount) {
+    debitCount++;
+    balance -= amount;
+  }
+  
+  public void credit(double amount) {
+    creditCount++;
+    balance += amount;
+  }
+}
+
+// przykładowe transakcje
+List<Transaction> transactions = new ArrayList<Transaction>();
+transactions.add(new Transaction("32309111922661937852684864", "06105023389842834748547303", 10.90));
+transactions.add(new Transaction("31074318698137062235845814", "66105036543749403346524547", 200.90));
+transactions.add(new Transaction("32309111922661937852684864", "66105036543749403346524547", -50.0));
+
+// przetworzenie transak
