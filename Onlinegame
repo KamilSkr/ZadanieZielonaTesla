@@ -1,0 +1,73 @@
+import java.util.*;
+
+public class OnlineGame {
+    public static void main(String[] args) {
+        // przykładowe wywołanie funkcji calculateOrder
+        int m = 6;
+        List<Clan> clans = new ArrayList<>();
+        clans.add(new Clan(10, 500));
+        clans.add(new Clan(7, 800));
+        clans.add(new Clan(9, 400));
+        clans.add(new Clan(8, 600));
+        List<List<Clan>> order = calculateOrder(m, clans);
+        System.out.println(order);
+    }
+
+    public static List<List<Clan>> calculateOrder(int m, List<Clan> clans) {
+        // sortujemy klany po liczbie punktów
+        clans.sort(Comparator.comparingInt(Clan::getPoints).reversed());
+
+        // grupujemy klany po sumie punktów i liczbie graczy
+        Map<Integer, Map<Integer, List<Clan>>> groups = new HashMap<>();
+        for (Clan clan : clans) {
+            int groupPoints = clan.getPoints() / m;
+            int groupSize = clan.getNumberOfPlayers();
+            if (!groups.containsKey(groupPoints)) {
+                groups.put(groupPoints, new HashMap<>());
+            }
+            if (!groups.get(groupPoints).containsKey(groupSize)) {
+                groups.get(groupPoints).put(groupSize, new ArrayList<>());
+            }
+            groups.get(groupPoints).get(groupSize).add(clan);
+        }
+
+        // tworzymy listę grup i sortujemy po liczbie punktów w grupie
+        List<Group> groupList = new ArrayList<>();
+        for (Map<Integer, List<Clan>> groupSizeMap : groups.values()) {
+            for (List<Clan> group : groupSizeMap.values()) {
+                groupList.add(new Group(group));
+            }
+        }
+        groupList.sort(Comparator.comparingInt(Group::getPoints).reversed());
+
+        // dzielimy grupy na wejścia na planszę
+        List<List<Group>> entries = new ArrayList<>();
+        List<Group> currentEntry = new ArrayList<>();
+        int currentPoints = -1;
+        for (Group group : groupList) {
+            int groupPoints = group.getPoints();
+            int groupSize = group.getSize();
+            if (groupPoints != currentPoints) {
+                // jeśli nowa grupa ma inną liczbę punktów niż poprzednia, dodajemy nowe wejście na planszę
+                currentEntry = new ArrayList<>();
+                entries.add(currentEntry);
+                currentPoints = groupPoints;
+            }
+            // dodajemy grupę do aktualnego wejścia na planszę, jeśli się zmieści
+            if (currentEntry.stream().mapToInt(Group::getSize).sum() + groupSize <= m) {
+                currentEntry.add(group);
+            } else {
+                // jeśli się nie zmieści, przenosimy grupę do następnego wejścia na planszę
+                currentEntry = new ArrayList<>();
+                currentEntry.add(group);
+                entries.add(currentEntry);
+            }
+        }
+
+        // sortujemy grupy w wejściach na planszę po liczbie graczy w klanach
+        for (List<Group> entry : entries) {
+            entry.sort(Comparator.comparingInt(Group::getSize));
+        }
+
+        // łączymy wejścia na planszę w jedną listę i sortujemy po liczbie punktów w grupie
+        List<Group> allGroups = new ArrayList<>();
