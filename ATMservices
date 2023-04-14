@@ -1,0 +1,58 @@
+import java.util.*;
+
+class Task {
+    public int region;
+    public String requestType;
+    public int atmId;
+    
+    public Task(int region, String requestType, int atmId) {
+        this.region = region;
+        this.requestType = requestType;
+        this.atmId = atmId;
+    }
+}
+
+class ATM {
+    public int region;
+    public int atmId;
+    
+    public ATM(int region, int atmId) {
+        this.region = region;
+        this.atmId = atmId;
+    }
+}
+
+public class ATMOrdering {
+    public static List<ATM> calculateOrder(List<Task> tasks) {
+        List<ATM> order = new ArrayList<>();
+        Set<Integer> usedAtmIds = new HashSet<>();
+        
+        tasks.sort((t1, t2) -> t1.region - t2.region);
+        
+        for (Task task : tasks) {
+            if (!usedAtmIds.contains(task.atmId)) {
+                order.add(new ATM(task.region, task.atmId));
+                usedAtmIds.add(task.atmId);
+            }
+        }
+        
+        return order;
+    }
+    
+    public static void main(String[] args) {
+        List<Task> tasks = new ArrayList<>();
+        tasks.add(new Task(4, "STANDARD", 1));
+        tasks.add(new Task(1, "STANDARD", 1));
+        tasks.add(new Task(2, "STANDARD", 1));
+        tasks.add(new Task(3, "PRIORITY", 2));
+        tasks.add(new Task(3, "STANDARD", 1));
+        tasks.add(new Task(2, "SIGNAL_LOW", 1));
+        tasks.add(new Task(5, "STANDARD", 2));
+        tasks.add(new Task(5, "FAILURE_RESTART", 1));
+        
+        List<ATM> order = calculateOrder(tasks);
+        for (ATM atm : order) {
+            System.out.println("Region: " + atm.region + ", ATM ID: " + atm.atmId);
+        }
+    }
+}
